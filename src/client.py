@@ -3,6 +3,8 @@ import pickle
 import pandas as pd
 import time
 import random
+import statsmodels.api as sm
+from scipy import stats
 
 HOST = '10.20.62.105'
 PORT = 8081

@@ -1,6 +1,6 @@
 import socket
 import pickle
-
+#YIUIuillokgkuju
 HOST = '10.20.62.105'
 PORT = 8081
 
