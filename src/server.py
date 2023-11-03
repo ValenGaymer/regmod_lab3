@@ -20,8 +20,7 @@ while True:
                 data_size = int.from_bytes(data_size_bytes, byteorder='big')
                 data = conn.recv(data_size)
                 if not data:
-                    break
-                
+                    break   
                 df = pickle.loads(data)
                 print("DataFrame recibido")
                 print(df)
