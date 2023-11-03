@@ -3,10 +3,9 @@ import pickle
 import pandas as pd
 import time
 import random
-import statsmodels.api as sm
-from scipy import stats
 
-HOST = '10.20.62.105'
+
+HOST = '10.20.2.38'
 PORT = 8081
 num_rows = 3
 while True:
@@ -15,9 +14,7 @@ while True:
     'Precipitación %': [random.randint(0, 50) for _ in range(num_rows)],
     'Temp_max': [random.uniform(20, 35) for _ in range(num_rows)],
     'Temp': [random.uniform(10, 25) for _ in range(num_rows)]}
-
     df = pd.DataFrame(data)
-
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         client_socket.connect((HOST, PORT))
         data_to_send = pickle.dumps(df)
