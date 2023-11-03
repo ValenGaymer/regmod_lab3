@@ -20,12 +20,6 @@ while True:
         client_socket.connect((HOST, PORT))
         data_to_send = pickle.dumps(df)
         client_socket.send(data_to_send)
-<<<<<<< Updated upstream
-
-    print("DataFrame enviado al servidor.")
-    time.sleep(10)
-=======
         print(df)
         print("DataFrame enviado al servidor.")
     time.sleep(1)
->>>>>>> Stashed changes
