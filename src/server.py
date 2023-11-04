@@ -1,8 +1,8 @@
 import socket
 import pickle
 
-HOST = '10.20.2.38'
-PORT = 8081
+HOST = '192.168.101.82'
+PORT = 8253
 
 while True:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:

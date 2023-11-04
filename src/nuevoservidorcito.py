@@ -3,17 +3,16 @@ import pickle
 import pandas as pd
 import threading
 
-HOST = '10.20.2.38'
-PORT = 8081
+HOST = '192.168.101.82'
+PORT = 8253
 client_dataframes = {}
 lock = threading.Lock()
 
 def handle_client(conn):
     try:
         client_df = pd.DataFrame()  # Crear un DataFrame para el cliente actual
-        entries_received = 0  # Contador de entradas recibidas para el cliente
         
-        while entries_received < 10:  # Detenerse después de recibir 10 entradas
+        while True:
             data_size_bytes = conn.recv(4)
             if not data_size_bytes:
                 break
@@ -23,14 +22,11 @@ def handle_client(conn):
             if not data:
                 break   
             df = pickle.loads(data)
-            print("DataFrame recibido para el cliente")
-            print(df)
             
             # Concatenar el DataFrame del cliente actual con el nuevo DataFrame
             client_df = pd.concat([client_df, df], axis=0)
-            entries_received += 1
+            print(client_df)
         
-        # Almacenar el DataFrame del cliente en el diccionario
         with lock:
             client_dataframes[threading.current_thread().ident] = client_df
     except Exception as e:
@@ -38,7 +34,6 @@ def handle_client(conn):
     finally:
         conn.close()
 
-# Crear el socket del servidor
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 server_socket.listen()
