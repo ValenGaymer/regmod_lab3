@@ -3,12 +3,11 @@ import pickle
 import pandas as pd
 import time
 import random
-
-HOST = '10.20.2.38'
-PORT = 8081
+HOST = '192.168.101.82'
+PORT = 8253
 num_rows = 3
 
-while True:
+for i in range(10):
     data = {
         'Velocidad del viento km/h': [random.randint(100, 150) for _ in range(num_rows)],
         'Precipitación %': [random.randint(0, 50) for _ in range(num_rows)],
@@ -27,5 +26,5 @@ while True:
         print(df)
         print("DataFrame enviado al servidor.")
     
-    time.sleep(5)
+    time.sleep(1)
 
