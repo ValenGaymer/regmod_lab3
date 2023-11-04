@@ -19,9 +19,12 @@ def handle_client(conn):
                 break
             
             data_size = int.from_bytes(data_size_bytes, byteorder='big')
-            data = conn.recv(data_size)
-            if not data:
-                break   
+            data = b""
+            while len(data) < data_size:
+                more_data = conn.recv(data_size - len(data))
+                if not more_data:
+                    raise Exception("Recibido menos datos de lo esperado")
+                data += more_data
             df = pickle.loads(data)
             
             client_df = pd.concat([client_df, df], axis=0)
@@ -34,6 +37,7 @@ def handle_client(conn):
         print(f"Error al manejar cliente: {e}")
     finally:
         conn.close()
+
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 server_socket.listen()
