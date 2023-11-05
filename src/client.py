@@ -1,50 +1,40 @@
 import socket
 import pickle
 import pandas as pd
-import threading
+import time
+import random
 
 HOST = '192.168.101.82'
 PORT = 8253
+num_rows = 3
 
-client_dataframes = {}
-lock = threading.Lock()
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+    client_socket.connect((HOST, PORT))
 
-def handle_client(conn):
-    try:
-        client_df = pd.DataFrame()  # Crear un DataFrame para el cliente actual
-        
-        while len(client_df) < 10:  # Esperar a recibir 10 dataframes
-            data_size_bytes = conn.recv(4)
-            if not data_size_bytes:
-                break
-            
-            data_size = int.from_bytes(data_size_bytes, byteorder='big')
-            data = b""
-            while len(data) < data_size:
-                more_data = conn.recv(data_size - len(data))
-                if not more_data:
-                    raise Exception("Recibido menos datos de lo esperado")
-                data += more_data
-            df = pickle.loads(data)
-            
-            client_df = pd.concat([client_df, df], axis=0)
-        
-        with lock:
-            client_dataframes[threading.current_thread().ident] = client_df
+    while True:
+        data = {
+            'Velocidad del viento km/h': [random.randint(100, 150) for _ in range(num_rows)],
+            'Precipitación %': [random.randint(0, 50) for _ in range(num_rows)],
+            'Temp_max': [random.uniform(20, 35) for _ in range(num_rows)],
+            'Temp': [random.uniform(10, 25) for _ in range(num_rows)]
+        }
 
-        conn.send(pickle.dumps(client_df))
-    except Exception as e:
-        print(f"Error al manejar cliente: {e}")
-    finally:
-        conn.close()
+        df = pd.DataFrame(data)
 
-server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server_socket.bind((HOST, PORT))
-server_socket.listen()
-print(f"Esperando {HOST}:{PORT}")
+        data_to_send = pickle.dumps(df)
+        data_size = len(data_to_send)
+        client_socket.send(data_size.to_bytes(4, byteorder='big'))  # Envía el tamaño de los datos
+        client_socket.send(data_to_send)
+        print(df)
+        print("DataFrame enviado al servidor.")
 
-while True:
-    conn, addr = server_socket.accept()
-    print(f"Nueva conexión desde {addr}")
-    client_thread = threading.Thread(target=handle_client, args=(conn,))
-    client_thread.start()
+        # Espera la respuesta del servidor
+        response_size_bytes = client_socket.recv(4)
+        response_size = int.from_bytes(response_size_bytes, byteorder='big')
+        response_data = client_socket.recv(response_size)
+        response_df = pickle.loads(response_data)
+
+        print("DataFrame final recibido del servidor:")
+        print(response_df)
+
+        time.sleep(1)

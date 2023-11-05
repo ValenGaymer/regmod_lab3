@@ -14,6 +14,7 @@ def handle_client(conn):
         client_df = pd.DataFrame()  # Crear un DataFrame para el cliente actual
         
         while len(client_df) < 10:  # Esperar a recibir 10 dataframes
+
             data_size_bytes = conn.recv(4)
             if not data_size_bytes:
                 break
@@ -37,6 +38,7 @@ def handle_client(conn):
         print(f"Error al manejar cliente: {e}")
     finally:
         conn.close()
+
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
