@@ -13,7 +13,7 @@ def handle_client(conn):
     try:
         client_df = pd.DataFrame()  # Crear un DataFrame para el cliente actual
         
-        while len(client_df) < 10:  # Esperar a recibir 10 dataframes
+        while len(client_df) < 30:  # Esperar a recibir 10 dataframes
 
             data_size_bytes = conn.recv(4)
             if not data_size_bytes:
@@ -29,9 +29,11 @@ def handle_client(conn):
             df = pickle.loads(data)
             
             client_df = pd.concat([client_df, df], axis=0)
+            print(f'client_Df:     {client_df}')
         
         with lock:
             client_dataframes[threading.current_thread().ident] = client_df
+            print(f'wlock:    {client_dataframes[threading.current_thread().ident]}')
 
         conn.send(pickle.dumps(client_df))
     except Exception as e:

@@ -14,8 +14,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
 
     while True:
         data = {
-            'Var1': [random.randint(100, 150) for _ in range(num_rows)],
-            'Var2': [random.randint(0, 50) for _ in range(num_rows)]
+            'Var3': [random.randint(100, 150) for _ in range(num_rows)],
+            'Var4': [random.randint(0, 50) for _ in range(num_rows)]
         }
 
         df = pd.DataFrame(data)
