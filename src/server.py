@@ -42,12 +42,10 @@ def handle_client(conn):
     except Exception as e:
         print(f"Error al manejar cliente: {e}")
 
-
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 server_socket.listen()
 print(f"Esperando {HOST}:{PORT}")
-
 
 while True:
     conn, addr = server_socket.accept()

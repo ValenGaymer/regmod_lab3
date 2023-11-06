@@ -27,6 +27,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             client_socket.send(data_to_send)
             print(df)
             print("DataFrame enviado al servidor.")
+            time.sleep(3)
 
         # Espera la respuesta del servidor
     response_size_bytes = client_socket.recv(4)
@@ -35,6 +36,5 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     response_df = pickle.loads(response_data)  # Deserialize using pickle
     print("DataFrame final recibido del servidor:")
     print(response_df)
-    time.sleep(5)
 
-    
+
