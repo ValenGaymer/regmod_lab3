@@ -6,19 +6,21 @@ import threading
 HOST = '192.168.101.82'
 PORT = 8253
 
-client_dataframes = {}
-sensores_lista = []
+MAX_CLIENTS = 1  # Número máximo de clientes que pueden estar conectados al mismo tiempo
+client_threads = []  # Lista de subprocesos de clientes
+client_dataframes = {}  # Diccionario para almacenar los DataFrames de los clientes
 lock = threading.Lock()
 
 def handle_client(conn):
     try:
         client_df = pd.DataFrame()  # Crear un DataFrame para el cliente actual
-        while len(client_df) < 30:  # Esperar a recibir 10 dataframes
+
+        while len(client_df) < 30:  # Esperar a recibir 30 filas de datos
 
             data_size_bytes = conn.recv(4)
             if not data_size_bytes:
                 break
-            
+
             data_size = int.from_bytes(data_size_bytes, byteorder='big')
             data = b""
             while len(data) < data_size:
@@ -26,37 +28,45 @@ def handle_client(conn):
                 if not more_data:
                     raise Exception("Recibido menos datos de lo esperado")
                 data += more_data
-                print(data)
             df = pickle.loads(data)
-            
+
             client_df = pd.concat([client_df, df], axis=0, ignore_index=True)
-            print(f'client_Df:     {client_df}')
-        
-
-        sensores_lista.append("sensor")
-
-        while len(sensores_lista) < 1:
-            print(f'TAMAÑO LISTAA {len(sensores_lista)}\n')
-            pass
 
         with lock:
             client_dataframes[threading.current_thread().ident] = client_df
-            print(f'wlock:    {client_dataframes[threading.current_thread().ident]}')
-            final_dataframe = pd.concat(client_dataframes, axis=1)
 
-        print(final_dataframe)
+        # Espera a que todos los clientes completen antes de proceder
+        while len(client_dataframes) < MAX_CLIENTS:
+            pass
+
+        # Combina todos los DataFrames de los clientes
+        final_dataframe = pd.merge(client_dataframes.values())
+
+        # Envía el DataFrame final al cliente actual
         conn.send(len(pickle.dumps(final_dataframe)).to_bytes(4, byteorder='big'))
         conn.send(pickle.dumps(final_dataframe))
+
     except Exception as e:
         print(f"Error al manejar cliente: {e}")
+
+    finally:
+        conn.close()
 
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 server_socket.listen()
 print(f"Esperando {HOST}:{PORT}")
 
-while True:
+while len(client_threads) < MAX_CLIENTS:
     conn, addr = server_socket.accept()
     print(f"Nueva conexión desde {addr}")
     client_thread = threading.Thread(target=handle_client, args=(conn,))
     client_thread.start()
+    client_threads.append(client_thread)
+
+# Espera a que todos los subprocesos de clientes finalicen
+for thread in client_threads:
+    thread.join()
+
+# Cierra el socket del servidor
+server_socket.close()
