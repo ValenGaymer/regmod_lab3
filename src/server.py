@@ -1,7 +1,7 @@
-import threading
-import pandas as pd
 import socket
 import pickle
+import pandas as pd
+import threading
 
 HOST = '192.168.101.82'
 PORT = 8253
@@ -35,7 +35,7 @@ def handle_client(conn):
 
         sensores_lista.append("sensor")
 
-        while len(sensores_lista) < 3:
+        while len(sensores_lista) < 1:
             print(f'TAMAÑO LISTAA {len(sensores_lista)}\n')
             pass
 
@@ -54,3 +54,9 @@ server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server_socket.bind((HOST, PORT))
 server_socket.listen()
 print(f"Esperando {HOST}:{PORT}")
+
+while True:
+    conn, addr = server_socket.accept()
+    print(f"Nueva conexión desde {addr}")
+    client_thread = threading.Thread(target=handle_client, args=(conn,))
+    client_thread.start()
