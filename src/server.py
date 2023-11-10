@@ -99,6 +99,8 @@ normals=0
 no_normals=0
 
 analisis = ''
+
+# Normalidad ...
 for columna in df_f.columns:
       if df_f[columna].dtype in ['int64', 'float64']:
             data = df_f[columna]
@@ -115,3 +117,19 @@ for columna in df_f.columns:
                 no_normals+=1
             print("\n")
 
+# Correlación
+for column in df_f.columns:
+  if df_f[column].dtype in ['int64', 'float64'] and column!=dependiente:
+    val=correlation_df[dependiente][column]
+    if abs(val)==val:
+      print("\n")
+      print(f"las variables {column} & {dependiente}")
+      print("se tiene una correlacion positiva, O sea una pendiente positiva en la grafica de dispersion ")
+      print("con un valor de :", val)
+      print("\n")
+    else:
+      print("\n")
+      print(f"las variables {column} & {dependiente}")
+      print(f"se tiene una correlacion negativa, O sea una pendiente negativa en la grafica de dispersion. A medida que aumenta {column} disminuye {dependiente} ")
+      print("con un valor de :", val)
+      print("\n")
