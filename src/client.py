@@ -9,10 +9,11 @@ PORT = 8081
 num_rows = 3
 while True:
     data = {
-    'Velocidad del viento km/h': [random.randint(100, 150) for _ in range(num_rows)],
-    'Precipitación %': [random.randint(0, 50) for _ in range(num_rows)],
-    'Temp_max': [random.uniform(20, 35) for _ in range(num_rows)],
-    'Temp': [random.uniform(10, 25) for _ in range(num_rows)]}
+        'Velocidad del viento km/h niccc': [random.randint(100, 150) for _ in range(num_rows)],
+        'Precipitación % nicc': [random.randint(0, 50) for _ in range(num_rows)],
+        'Temp_max nicc': [random.uniform(20, 35) for _ in range(num_rows)],
+        'Tempnicc': [random.uniform(10, 25) for _ in range(num_rows)]
+    }
 
     df = pd.DataFrame(data)
 
@@ -20,6 +21,10 @@ while True:
         client_socket.connect((HOST, PORT))
         data_to_send = pickle.dumps(df)
         client_socket.send(data_to_send)
+        print(df)
+        print("DataFrame enviado al servidor. nic <3")
+    
+    time.sleep(7)
 
     print("DataFrame enviado al servidor.")
     time.sleep(10)
