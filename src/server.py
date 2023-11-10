@@ -24,7 +24,7 @@ PORT = 65000
 client_dataframes = []
 sensores_lista = []
 lock = threading.Lock()
-EXPECTED_SENSORS = 3
+EXPECTED_SENSORS = 1
 global df_f
 df_f = {}
 
@@ -97,8 +97,7 @@ for conn in client_connections:
 # Normalidad
 normals=0
 no_normals=0
-
-analisis = ''
+analisis = 'Pruebas de Normalidad'
 
 # Normalidad ...
 for columna in df_f.columns:
@@ -106,18 +105,19 @@ for columna in df_f.columns:
             data = df_f[columna]
             stat, p = stats.shapiro(data)
             analisis = analisis + f"\n\nColumna: {columna}"
-            analisis = analisis + ("\nEstadístico de prueba:", stat)
-            analisis = analisis + ("\nValor p:", p)
+            analisis = analisis + "\nEstadístico de prueba: "+ str(stat)
+            analisis = analisis + "\nValor p: "+ str(p)
             alpha = 0.05
             if p > alpha:
-                print(f"La variable {columna} sigue una distribución normal")
+                analisis = analisis + f"\nLa variable {columna.lower()} sigue una distribución normal\n"
                 normals+=1
             else:
-                print(f"La variable {columna} no siguen una distribución normal")
+                analisis = analisis + f"\nLa variable {columna.lower()} no siguen una distribución normal\n"
                 no_normals+=1
-            print("\n")
+
 
 # Correlación
+analisis = analisis + "\nCorrelación\n"
 dependiente = "Temperatura"
 numeric_columns = df_f.select_dtypes(include=['int64', 'float64'])
 correlation_matrix = np.corrcoef(numeric_columns, rowvar=False)
@@ -127,14 +127,48 @@ for column in df_f.columns:
   if df_f[column].dtype in ['int64', 'float64'] and column!=dependiente:
     val=correlation_df[dependiente][column]
     if abs(val)==val:
-      print("\n")
-      print(f"las variables {column} & {dependiente}")
-      print("se tiene una correlacion positiva, O sea una pendiente positiva en la grafica de dispersion ")
-      print("con un valor de :", val)
+      analisis  = analisis + f"\nLas variables {column} y {dependiente} tienen un coeficiente de correlación positivo ({val}). Esto quiere decir que a mayor {column.lower()} mayor {dependiente.lower()}"
       print("\n")
     else:
-      print("\n")
-      print(f"las variables {column} & {dependiente}")
-      print(f"se tiene una correlacion negativa, O sea una pendiente negativa en la grafica de dispersion. A medida que aumenta {column} disminuye {dependiente} ")
-      print("con un valor de :", val)
-      print("\n")
+      analisis = analisis + f"\nLas variables {column} y {dependiente} tienen un coeficiente de correlación negativo ({val}). Esto quiere decir que a mayor {column.lower()} menor {dependiente.lower()}"
+
+print(analisis)
+
+data_to_send = analisis.encode('utf-8')
+size = len(data_to_send).to_bytes(4, byteorder='big')
+
+for conn in client_connections:
+    try:
+        conn.sendall(size)
+        conn.sendall(data_to_send)
+    except Exception as e:
+        print(f"Error al enviar datos al cliente: {e}")
+
+# MODELO DE REGRESIÓN:
+def reg_m(y, x):
+    ones = np.ones(len(x[0]))
+    X = sm.add_constant(np.column_stack((x[0], ones)))
+    for ele in x[1:]:
+        X = sm.add_constant(np.column_stack((ele, X)))
+    results = sm.OLS(y, X).fit()
+    return results
+
+variables_respuesta=[]
+y = df_f[dependiente]
+for columna in df_f.columns:
+   if df_f[columna].dtype in ['int64', 'float64'] and columna != dependiente:
+      variables_respuesta+=([df_f[columna]])
+
+print(variables_respuesta)
+
+reg_m=reg_m(y, variables_respuesta)
+reg = pickle.dumps(reg_m.summary())
+
+for conn in client_connections:
+        try:
+            conn.sendall(len(reg).to_bytes(4, byteorder='big'))
+            conn.sendall(reg)
+        except Exception as e:
+            print(f"Error al enviar datos al cliente: {e}") 
+
+SOCKET_SERVIDOR.close()

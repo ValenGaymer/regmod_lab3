@@ -21,10 +21,10 @@ app.layout = html.Div([
                 dash_table.DataTable(data=df_f.to_dict('records'), page_size=11, style_table={'overflowX': 'auto'})
             ]),
             html.Div(id='hist',className='six columns', children=[
-                dcc.Graph(figure=px.histogram(df_f, x='Var4', histfunc='avg', width=800, height=400), id='histo-chart-final')
+                dcc.Graph(figure=px.histogram(df_f, x='Temperatura', histfunc='avg', width=800, height=400), id='histo-chart-final')
             ]),
             html.Div(id='cor',className='six columns', children=[
-            dcc.Graph(figure = px.scatter_matrix(df_f, dimensions=['Var1','Var2','Var3','Var4'], height=700))
+            dcc.Graph(figure = px.scatter_matrix(df_f, dimensions=['Temperatura','Profundidad','Ph'], height=700))
             ])
         ], id="content-1-container"),
 
@@ -59,8 +59,3 @@ def show_content(n_clicks, content_1_visible, content_2_visible):
 
 app.run(debug=True)
 
-if __name__ == '__main__':
-    app.run(debug=True)
-
-while True:
-     pass

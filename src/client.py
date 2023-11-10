@@ -13,7 +13,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
     for i in range(10):
             data = {
-                'Temperatura': [random.randint(100, 150) for _ in range(num_rows)]
+                'Temperatura': [random.randint(100, 150) for _ in range(num_rows)],
+                'Profundidad': [random.randint(100, 150) for _ in range(num_rows)],
+                'Ph': [random.randint(0, 50) for _ in range(num_rows)]
             }
             df = pd.DataFrame(data)
             data_to_send = pickle.dumps(df)
@@ -35,3 +37,24 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     dataframe = pickle.loads(data)
     print(dataframe)
 
+    tamaño_data = client_socket.recv(4)
+    data_size = int.from_bytes(tamaño_data, byteorder='big')
+    data = b""
+    while len(data) < data_size:
+        more_data = client_socket.recv(data_size - len(data))
+        if not more_data:
+            raise Exception("Recibido menos datos de lo esperado")
+        data += more_data
+
+    print(data.decode('utf-8'))
+
+    length_data = client_socket.recv(4)
+    length = int.from_bytes(length_data, byteorder='big')
+    summary_data = b""
+    while len(summary_data) < length:
+        more_data = client_socket.recv(length - len(summary_data))
+        if not more_data:
+            raise Exception("Recibido menos datos de lo esperado")
+        summary_data += more_data
+    summary = pickle.loads(summary_data)
+    print(summary)
