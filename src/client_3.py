@@ -4,7 +4,7 @@ import random
 import pandas as pd
 import time
 
-HOST = '10.20.2.22'
+HOST = '192.168.101.82'
 PORT = 65000
 num_rows = 3
 response_df = pd.DataFrame({})
@@ -13,8 +13,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
     for i in range(10):
             data = {
-                'Var1': [random.randint(100, 150) for _ in range(num_rows)],
-                'Var2': [random.randint(0, 50) for _ in range(num_rows)]
+                'Var5': [random.randint(100, 150) for _ in range(num_rows)],
+                'Var6': [random.randint(0, 50) for _ in range(num_rows)]
             }
             df = pd.DataFrame(data)
             data_to_send = pickle.dumps(df)
@@ -33,6 +33,9 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         if not more_data:
             raise Exception("Recibido menos datos de lo esperado")
         data += more_data
+
     dataframe = pickle.loads(data)
     print(dataframe)
+
+
 

@@ -7,9 +7,16 @@ from dash import Dash, html, dash_table, dcc
 import pandas as pd
 import plotly.express as px
 from dash.dependencies import Input, Output
-import numpy as np
 import statsmodels.api as sm
+from statsmodels.stats.anova import anova_lm
 import sys
+from pprint import pprint
+from scipy import stats
+import seaborn as sns
+import numpy as np
+from scipy.stats import f_oneway
+import matplotlib.pyplot as plt
+import statistics as stats2
 
 HOST = '10.20.2.22'
 PORT = 65000
@@ -17,6 +24,7 @@ PORT = 65000
 client_dataframes = []
 sensores_lista = []
 lock = threading.Lock()
+EXPECTED_SENSORS = 3
 global df_f
 df_f = {}
 
@@ -54,16 +62,17 @@ def handle_client(conn):
     except Exception as e:
         print(f"Error al manejar cliente: {e}")
 
-
-while len(sensores_lista)<=1:
+client_connections = []
+while len(sensores_lista)<=EXPECTED_SENSORS - 1:
     print(client_dataframes)
     conn, addr = SOCKET_SERVIDOR.accept()
     print(f"Nueva conexión desde {addr}")
+    client_connections.append(conn)
     client_thread = threading.Thread(target=handle_client, args=(conn,))
     sensores_lista.append("sensor")
     client_thread.start()
 
-while len(client_dataframes) <=1:
+while len(client_dataframes) != EXPECTED_SENSORS:
     print('esperando')
     print(len(client_dataframes))
     pass
@@ -76,5 +85,33 @@ df_f = final_dataframe
 
 data_to_send = pickle.dumps(df_f)
 size = len(data_to_send).to_bytes(4, byteorder='big')
-conn.sendall(size)
-conn.sendall(data_to_send)
+
+for conn in client_connections:
+        try:
+            conn.sendall(size)
+            conn.sendall(data_to_send)
+        except Exception as e:
+            print(f"Error al enviar datos al cliente: {e}") 
+
+
+# Normalidad
+normals=0
+no_normals=0
+
+analisis = ''
+for columna in df_f.columns:
+      if df_f[columna].dtype in ['int64', 'float64']:
+            data = df_f[columna]
+            stat, p = stats.shapiro(data)
+            analisis = analisis + f"\n\nColumna: {columna}"
+            analisis = analisis + ("\nEstadístico de prueba:", stat)
+            analisis = analisis + ("\nValor p:", p)
+            alpha = 0.05
+            if p > alpha:
+                print(f"La variable {columna} sigue una distribución normal")
+                normals+=1
+            else:
+                print(f"La variable {columna} no siguen una distribución normal")
+                no_normals+=1
+            print("\n")
+
