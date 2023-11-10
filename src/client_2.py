@@ -13,8 +13,8 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
     for i in range(10):
             data = {
-                'Presión atmosférica': [random.randint(100, 150) for _ in range(num_rows)],
-                'Velocidad del viento': [random.randint(0, 50) for _ in range(num_rows)]
+                'Profundidad': [random.randint(100, 150) for _ in range(num_rows)],
+                'Ph': [random.randint(0, 50) for _ in range(num_rows)]
             }
             df = pd.DataFrame(data)
             data_to_send = pickle.dumps(df)

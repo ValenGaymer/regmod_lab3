@@ -118,6 +118,11 @@ for columna in df_f.columns:
             print("\n")
 
 # Correlación
+dependiente = "Temperatura"
+numeric_columns = df_f.select_dtypes(include=['int64', 'float64'])
+correlation_matrix = np.corrcoef(numeric_columns, rowvar=False)
+correlation_df = pd.DataFrame(correlation_matrix, columns=numeric_columns.columns, index=numeric_columns.columns)
+
 for column in df_f.columns:
   if df_f[column].dtype in ['int64', 'float64'] and column!=dependiente:
     val=correlation_df[dependiente][column]
