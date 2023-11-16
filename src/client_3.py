@@ -17,7 +17,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     client_socket.connect((HOST, PORT))
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
     for i in range(10):
-            p = random.uniform(0,100)
+            p = ps = np.random.uniform(0, 100, num_rows)
             data = {
                 'Precipitación': p
             }

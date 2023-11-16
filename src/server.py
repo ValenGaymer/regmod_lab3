@@ -19,7 +19,7 @@ PORT = 65000
 client_dataframes = []
 sensores_lista = []
 lock = threading.Lock()
-EXPECTED_SENSORS = 2
+EXPECTED_SENSORS = 3
 global df_f
 df_f = {}
 

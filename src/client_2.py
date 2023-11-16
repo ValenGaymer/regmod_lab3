@@ -6,7 +6,6 @@ import time
 import numpy as np
 import webbrowser
 
-
 HOST = '10.20.2.21'
 PORT = 65000
 num_rows = 10
@@ -17,7 +16,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     client_socket.connect((HOST, PORT))
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
     for i in range(10):
-            ps = 100 + random.uniform(0,1)
+            ps = np.random.uniform(0, 90, num_rows)
             data = {
                 'Presión superficial': ps
             }
