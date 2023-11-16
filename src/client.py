@@ -3,19 +3,25 @@ import pickle
 import random
 import pandas as pd
 import time
+import numpy as np
+import webbrowser
 
-HOST = '10.20.2.22'
+
+HOST = '10.20.2.21'
 PORT = 65000
 num_rows = 3
-response_df = pd.DataFrame({})
+random.seed(42)
+df = pd.DataFrame({})
+
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     client_socket.connect((HOST, PORT))
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
     for i in range(10):
+            temperatura = np.random.randint(24, 31, num_rows)
+            humedad = temperatura + np.random.randint(10, 69, num_rows)
             data = {
-                'Temperatura': [random.randint(100, 150) for _ in range(num_rows)],
-                'Profundidad': [random.randint(100, 150) for _ in range(num_rows)],
-                'Ph': [random.randint(0, 50) for _ in range(num_rows)]
+                'Temperatura': temperatura,
+                'Humedad': humedad
             }
             df = pd.DataFrame(data)
             data_to_send = pickle.dumps(df)
@@ -35,7 +41,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
             raise Exception("Recibido menos datos de lo esperado")
         data += more_data
     dataframe = pickle.loads(data)
-    print(dataframe)
+    print(f'Dataframe recibido: {dataframe}')
 
     tamaño_data = client_socket.recv(4)
     data_size = int.from_bytes(tamaño_data, byteorder='big')
@@ -58,3 +64,21 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         summary_data += more_data
     summary = pickle.loads(summary_data)
     print(summary)
+
+    html_size_bytes = client_socket.recv(4)
+    html_size = int.from_bytes(html_size_bytes, byteorder='big')
+
+    html_content = b""
+    while len(html_content) < html_size:
+        data = client_socket.recv(html_size - len(html_content))
+        if not data:
+            break
+        html_content += data
+    html_file_path = 'received_html.html'
+    with open(html_file_path, 'wb') as f:
+        f.write(html_content)
+
+    webbrowser.open(html_file_path, new=2)
+    client_socket.close()
+
+    
