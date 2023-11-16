@@ -1,8 +1,9 @@
-import pandas as pd
 import plotly.express as px
 import plotly.subplots as sp
+import pandas as pd
 import plotly.graph_objects as go
 import numpy as np
+import webbrowser
 
 data = {
     'Variable1': np.random.randn(100),
@@ -14,36 +15,54 @@ data = {
 }
 
 df = pd.DataFrame(data)
-fig_hist_variable1 = px.histogram(df, x="Variable1", marginal="box", nbins=30, title="Histograma Variable1", height=500, width=600)
-fig_hist_variable2 = px.histogram(df, x="Variable2", marginal="box", nbins=30, title="Histograma Variable2", height=500, width=600)
-fig_hist_variable3 = px.histogram(df, x="Variable3", marginal="box", nbins=30, title="Histograma Variable3", height=500, width=600)
-fig_hist_variable4 = px.histogram(df, x="Variable1", marginal="box", nbins=30, title="Histograma Variable4", height=500, width=600)
-fig_hist_variable5 = px.histogram(df, x="Variable2", marginal="box", nbins=30, title="Histograma Variable5", height=500, width=600)
-fig_hist_variable6 = px.histogram(df, x="Variable3", marginal="box", nbins=30, title="Histograma Variable6", height=500, width=600)
 
+
+color_palette = ["#de6e4b", "#7fd1b9", "#7fd1b9", "#7a6563", "#E56399"]
 correlation_matrix = df.corr()
 fig_corr = px.imshow(correlation_matrix.values,
                      labels=dict(color="Correlación"),
                      x=df.columns,
                      y=df.columns,
-                     title="Diagrama de Correlación Múltiple", height=500, width=1000)
+                     title="Diagrama de Correlación Múltiple", height=500, width=1000,
+                     color_continuous_scale = ["#7FD1B9", "#de6e4b"])
 
-fig = sp.make_subplots(rows=2, cols=3, subplot_titles=["Histograma Variable1", "Histograma Variable2", "Histograma Variable3", "Histograma Variable4", "Histograma Variable5", "Histograma Variable6"])
+with open('histogramas.html', 'w', encoding='utf-8') as f:
+    f.write('<html>')
+    f.write('<head><meta charset="UTF-8"><style>')
+    f.write('.toc-container { position: fixed; top: 0px; right: 0; padding: 10px; background-color: #fff; border; font-family: Arial, sans-serif; }')
+    f.write('.toc-title { font-size: 18px; color: rgb(229, 99, 153); margin-bottom: 10px; }')
+    f.write('.toc-list { list-style-type: none; padding: 0; margin: 0; }')
+    f.write('.toc-item { margin-bottom: 5px; }')
+    f.write('.toc-link { text-decoration: none; color: #333; font-weight: bold; }')
+    f.write('.toc-link:hover { color: rgb(229, 99, 153); }')
+    f.write('</style></head>')
+    f.write('<body style="background-color: #ffffff;">')
 
-fig.add_trace(fig_hist_variable1['data'][0], row=1, col=1)
-fig.add_trace(fig_hist_variable2['data'][0], row=1, col=2)
-fig.add_trace(fig_hist_variable3['data'][0], row=1, col=3)
-fig.add_trace(fig_hist_variable4['data'][0], row=2, col=1)
-fig.add_trace(fig_hist_variable5['data'][0], row=2, col=2)
-fig.add_trace(fig_hist_variable6['data'][0], row=2, col=3)
+    f.write('<h1 style="text-align: left; font-family: Arial, sans-serif; padding: 30px; color: white; background-color: rgb(127, 209, 185);">RESUMEN ESTADÍSTICO</h1>')
 
-fig.update_layout(height=400, width=1200, showlegend=False)
-fig.write_html('histogramas.html', auto_open=True)
-
-with open('histogramas.html', 'a', encoding='utf-8') as f:
-    f.write('<head><meta charset="UTF-8"><style>.custom-paragraph { text-align: center; font-size: 18px; color: #333; padding: 10px; background-color: #f0f0f0; border-radius: 10px; font-family: Arial, sans-serif; }</style></head>')
-    f.write('<body>')
-    f.write('<h1 style="text-align: center; font-family: Arial, sans-serif;">Modelo de regresión lineal y resumen estadístico</h1>')
+    f.write('<h2 id = "histogramas" style="text-align: left; font-family: Arial, sans-serif; padding: 20px; color: rgb(229, 99, 153);">Histogramas</h2>')
+    for i, variable in enumerate(df.columns, start=1):
+        fig_hist_variable = px.histogram(df, x=variable, marginal="box", nbins=30, title=f"Histograma de {variable}", height=500, width=600, color_discrete_sequence=[color_palette[i % len(color_palette)]])
+        f.write(fig_hist_variable.to_html(full_html=False, include_plotlyjs='cdn'))
+    f.write('<h2 id = "correlacion" style="text-align: left; font-family: Arial, sans-serif; padding: 20px; color: rgb(222, 110, 75);">Correlación</h2>') 
     f.write(fig_corr.to_html(full_html=False, include_plotlyjs='cdn'))
-    f.write('<p class="custom-paragraph">Parrafitoomggg\n\n holaaaa \n jerhjkejkr Valen.</p>')
+    f.write('<h2 id = "modelo" style="text-align: left; font-family: Arial, sans-serif; padding: 20px; color: rgb(127, 209, 185);">Modelo de regresión lineal</h2>') 
+    f.write('<h2 id = "analisis" style="text-align: left; font-family: Arial, sans-serif; padding: 20px; color: rgb(127, 209, 185);">Análisis</h2>') 
+    f.write('<p style = "text-align: center; font-size: 18px; color: #333; padding: 20px; background-color: #f0f0f0; border-radius: 10px; font-family: Arial, sans-serif;">Parrafitoomggg\n\n holaaaa \n jerhjkejkr Valen.</p>')
+
+
+    f.write('<div class="toc-container">')
+    f.write('<h2 class="toc-title">Tabla de Contenidos</h2>')
+    f.write('<ul class="toc-list">')
+    f.write('<li class="toc-item"><a class="toc-link" href="#histogramas">Histogramas</a></li>')
+    f.write('<li class="toc-item"><a class="toc-link" href="#correlacion">Correlación</a></li>')
+    f.write('<li class="toc-item"><a class="toc-link" href="#modelo">Modelo de regresión lineal</a></li>')
+    f.write('<li class="toc-item"><a class="toc-link" href="#analisis">Análisis</a></li>')
+    f.write('</ul>')
+    f.write('</div>')
+
     f.write('</body>')
+    f.write('</html>')
+
+webbrowser.open('histogramas.html', new=2)
+
