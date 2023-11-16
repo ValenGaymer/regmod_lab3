@@ -9,7 +9,7 @@ import webbrowser
 
 HOST = '10.20.2.21'
 PORT = 65000
-num_rows = 3
+num_rows = 10
 random.seed(42)
 df = pd.DataFrame({})
 

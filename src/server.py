@@ -19,7 +19,7 @@ PORT = 65000
 client_dataframes = []
 sensores_lista = []
 lock = threading.Lock()
-EXPECTED_SENSORS = 1
+EXPECTED_SENSORS = 2
 global df_f
 df_f = {}
 
@@ -32,7 +32,7 @@ def handle_client(conn):
 
     try:
         client_df = pd.DataFrame()
-        while len(client_df) < 30:
+        while len(client_df) < 100:
 
             tamaño_data = conn.recv(4)
             if not tamaño_data:
@@ -157,7 +157,7 @@ def reg_m(y, x):
 variables_respuesta=[]
 y = df_f[dependiente]
 for columna in df_f.columns:
-   if df_f[columna].dtype in ['int32', 'float64'] and columna != dependiente:
+   if df_f[columna].dtypes in ['int32', 'float64'] and columna != dependiente:
       variables_respuesta+=([df_f[columna]])
 
 print(variables_respuesta)
