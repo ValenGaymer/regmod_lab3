@@ -82,11 +82,11 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
 
     while True:
         opc=3
-        print("¿Desea organizar alguna columna del dataframe de manera ascendente?")
-        opc=input("S o N")
-        if opc.strip()=="S":
+        print("¿Desea organizar alguna columna del dataframe de manera ascendente (a) o desea consultar la existencia de un dato (b)?")
+        opc=input("a o b")
+        if opc.strip()=="a":
             columna = input(f"¿Cuál columna? El dataframe tiene las siguientes: {dataframe.columns}")
-            client_socket.sendall(columna.encode('utf-8'))
+            client_socket.sendall((f'{columna}-a').encode('utf-8'))
             tamaño_data = client_socket.recv(4)
             data_size = int.from_bytes(tamaño_data, byteorder='big')
             data = b""
@@ -101,7 +101,22 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
                 text = f'{text + str(i)}\n'
             print(columna)
             print(text)
-        else:
+        elif opc.strip()=="b":
+            dato = input("Ingrese el dato a buscar")
+            client_socket.sendall((f'{dato}-b').encode('utf-8'))
+
+            tamaño_data = client_socket.recv(4)
+            data_size = int.from_bytes(tamaño_data, byteorder='big')
+            data = b""
+            while len(data) < data_size:
+                more_data = client_socket.recv(data_size - len(data))
+                if not more_data:
+                    raise Exception("Recibido menos datos de lo esperado")
+                data += more_data
+            vector = pickle.loads(data)
+        elif opc.strip() == 'c':
             break
+        else:
+            print('Opción no válida')
 
     client_socket.close()
