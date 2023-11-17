@@ -11,16 +11,20 @@ HOST = '10.20.2.21'
 PORT = 65000
 num_rows = 10
 random.seed(42)
-df = pd.DataFrame({})
+
+df_o = pd.read_csv("src/clima_dataset.csv")
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     client_socket.connect((HOST, PORT))
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
-    for i in range(10):
-            p = ps = np.random.uniform(0, 100, num_rows)
+    i = 0
+    while i < 110:
             data = {
-                'Precipitación': p
+                'Mes': df_o['Month'][i:i+5],
             }
+
+            i = i + 5
             df = pd.DataFrame(data)
             data_to_send = pickle.dumps(df)
             data_size = len(data_to_send)

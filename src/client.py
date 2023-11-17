@@ -11,18 +11,23 @@ HOST = '192.168.101.82'
 PORT = 65000
 num_rows = 10
 random.seed(42)
-df = pd.DataFrame({})
+
+import pandas as pd
+
+df_o = pd.read_csv("src/clima_dataset.csv")
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     client_socket.connect((HOST, PORT))
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
-    for i in range(10):
-            temperatura = np.random.randint(24, 31, num_rows)
-            humedad = temperatura + np.random.randint(10, 69, num_rows)
+    i = 0
+    while i < 110:
             data = {
-                'Temperatura': temperatura,
-                'Humedad': humedad
+                'Temperatura': df_o['Temp'][i:i+5],
+                'Ozono': df_o['Ozone'][i:i+5]
             }
+
+            i = i + 5
             df = pd.DataFrame(data)
             data_to_send = pickle.dumps(df)
             data_size = len(data_to_send)
@@ -95,6 +100,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         vector = pickle.loads(data)
         text = ''
         for i in vector:
-            text = f'{text + str(i)}\n'
+            text = f'{text + str(i)} '
         print(columna)
         print(text)

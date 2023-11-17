@@ -19,7 +19,7 @@ PORT = 65000
 client_dataframes = []
 sensores_lista = []
 lock = threading.Lock()
-EXPECTED_SENSORS = 2
+EXPECTED_SENSORS = 1
 global df_f
 df_f = {}
 
@@ -32,7 +32,7 @@ def handle_client(conn):
 
     try:
         client_df = pd.DataFrame()
-        while len(client_df) < 100:
+        while len(client_df) < 110:
 
             tamaño_data = conn.recv(4)
             if not tamaño_data:

@@ -11,17 +11,20 @@ HOST = '192.168.101.82'
 PORT = 65000
 num_rows = 10
 random.seed(42)
-df = pd.DataFrame({})
+
+df_o = pd.read_csv("src/clima_dataset.csv")
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     client_socket.connect((HOST, PORT))
     client_socket.setsockopt(socket.SOL_SOCKET, socket.SO_RCVBUF, 8192)
-    for i in range(10):
-            ps = np.random.uniform(0, 90, num_rows)
+    i = 0
+    while i < 110:
             data = {
-                'Presión superficial': ps
+                'Velocidad del viento': df_o['Wind'][i:i+5],
             }
 
+            i = i + 5
             df = pd.DataFrame(data)
             data_to_send = pickle.dumps(df)
             data_size = len(data_to_send)
