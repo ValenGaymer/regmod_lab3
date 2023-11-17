@@ -272,48 +272,33 @@ for column in df.columns:
   bloom_variables.add(str(column))
 
 def consultar(conn):
-    data = conn.recv(1024)
-    dato = data.decode('utf-8')
-    if dato.split('-')[1].strip().lower() == 'a':
-        vector = df[dato.split('-')[0]]
-        res = shell_sort(vector, len(vector))
-        data_to_send = pickle.dumps(res)
-        size = len(data_to_send).to_bytes(4, byteorder='big')
-        try:
-            conn.sendall(size)
-            conn.sendall(data_to_send)
-        except Exception as e:
-            print(f"Error al enviar datos al cliente: {e}") 
+    while True:
+        data = conn.recv(1024)
+        dato = data.decode('utf-8')
+        print(f'RECIBE DATO: {dato}')
+        if dato.split('-')[1].strip().lower() == 'a':
+            if dato.split('-')[0].strip().lower() in df.columns:
+                print('opc a')
+                print(f'DATO OPCIÓN A{dato.split('-')[0]}')
+                vector = df[dato.split('-')[0]]
+                res = shell_sort(vector, len(vector))
+                data_to_send = pickle.dumps(res)
+                size = len(data_to_send).to_bytes(4, byteorder='big')
+                try:
+                    conn.sendall(size)
+                    conn.sendall(data_to_send)
+                except Exception as e:
+                    print(f"Error al enviar datos al cliente: {e}") 
 
-        if columna == 'None' or columna not in df.columns:
-            reg = pickle.dumps("Variable no encontrada.")
-            try:
-                conn.sendall(len(reg).to_bytes(4, byteorder='big'))
-                conn.sendall(reg)
-            except Exception as e:
-                print(f"Error al enviar datos al cliente: {e}")
-        
-    if dato.split('-')[1].strip().lower() == 'b':
-        if dato.split('-')[0].isnumeric():
-            if dato.split('-')[0] in bloom_observations:
-                data_to_send = pickle.dumps('Probablemente existe con una certeza del 93%')
-
-            else:
-                data_to_send = pickle.dumps('Definitivamente no existe.')
-
-        else:
-            if dato.split('-')[0] in bloom_variables:
-                data_to_send = pickle.dumps('Probablemente existe con una certeza del 93%')
-            else:
-                data_to_send = pickle.dumps('Definitivamente no existe.')
-
-        try:
-            conn.sendall(len(data_to_send).to_bytes(4, byteorder='big'))
-            conn.sendall(data_to_send)
-        except Exception as e:
-            print(f"Error al enviar datos al cliente: {e}")
-   
-for i in conn:
+            elif dato.split('-')[0].strip().lower() not in df.columns:
+                reg = pickle.dumps("Variable no encontrada.")
+                try:
+                    conn.sendall(len(reg).to_bytes(4, byteorder='big'))
+                    conn.sendall(reg)
+                except Exception as e:
+                    print(f"Error al enviar datos al cliente: {e}")
+                    
+for i in client_connections:
     consultar_thread = threading.Thread(target=consultar, args=(i,))
     consultar_thread.start()
      
