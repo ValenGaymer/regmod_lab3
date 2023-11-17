@@ -125,7 +125,7 @@ correlation_matrix = np.corrcoef(numeric_columns, rowvar=False)
 correlation_df = pd.DataFrame(correlation_matrix, columns=numeric_columns.columns, index=numeric_columns.columns)
 
 for column in df_f.columns:
-  if df_f[column].dtype in ['int32', 'float64'] and column!=dependiente:
+  if df_f[column].dtype in ['int32', 'float32', 'float64', 'int64'] and column!=dependiente:
     val=correlation_df[dependiente][column]
     if abs(val)==val:
       analisis  = analisis + f"<br />Las variables {column} y {dependiente} tienen un coeficiente de correlación positivo ({val}). Esto quiere decir que a mayor {column.lower()} mayor {dependiente.lower()}"
@@ -206,9 +206,11 @@ with open('histogramas.html', 'w', encoding='utf-8') as f:
     f.write('<h1 style="text-align: left; font-family: Arial, sans-serif; padding: 30px; color: white; background-color: rgb(127, 209, 185);">RESUMEN ESTADÍSTICO</h1>')
 
     f.write('<h2 id = "histogramas" style="text-align: left; font-family: Arial, sans-serif; padding: 20px; color: rgb(229, 99, 153);">Histogramas</h2>')
+    f.write('<div style = "margin: auto; width: 50%; padding: 10px;">')
     for i, variable in enumerate(df.columns, start=1):
         fig_hist_variable = px.histogram(df, x=variable, marginal="box", nbins=30, title=f"Histograma de {variable}", height=500, width=600, color_discrete_sequence=[color_palette[i % len(color_palette)]])
         f.write(fig_hist_variable.to_html(full_html=False, include_plotlyjs='cdn'))
+    f.write('</div>')
     f.write('<h2 id = "correlacion" style="text-align: left; font-family: Arial, sans-serif; padding: 20px; color: rgb(222, 110, 75);">Correlación</h2>') 
     f.write(fig_corr.to_html(full_html=False, include_plotlyjs='cdn'))
     f.write('<h2 id = "modelo" style="text-align: left; font-family: Arial, sans-serif; padding: 20px; color: rgb(127, 209, 185);">Modelo de regresión lineal</h2>') 
