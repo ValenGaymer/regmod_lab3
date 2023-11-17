@@ -13,13 +13,13 @@ import numpy as np
 from bitarray import bitarray
 from pybloom_live import BloomFilter
 
-HOST = '192.168.101.82'
+HOST = '10.20.2.12'
 PORT = 65000
 
 client_dataframes = []
 sensores_lista = []
 lock = threading.Lock()
-EXPECTED_SENSORS = 1
+EXPECTED_SENSORS = 2
 global df_f
 df_f = {}
 

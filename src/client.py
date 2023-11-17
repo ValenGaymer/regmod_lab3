@@ -7,7 +7,7 @@ import numpy as np
 import webbrowser
 
 
-HOST = '192.168.101.82'
+HOST = '10.20.2.12'
 PORT = 65000
 num_rows = 10
 random.seed(42)
