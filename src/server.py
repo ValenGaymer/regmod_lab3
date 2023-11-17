@@ -10,16 +10,16 @@ import numpy as np
 import plotly.express as px
 import pandas as pd
 import numpy as np
-import webbrowser
-import random
+from bitarray import bitarray
+from pybloom_live import BloomFilter
 
-HOST = '10.20.2.21'
+HOST = '192.168.101.82'
 PORT = 65000
 
 client_dataframes = []
 sensores_lista = []
 lock = threading.Lock()
-EXPECTED_SENSORS = 3
+EXPECTED_SENSORS = 1
 global df_f
 df_f = {}
 
@@ -101,7 +101,7 @@ print(df_f.dtypes)
 # Normalidad ...
 for columna in df_f.columns:
       print(columna)
-      if df_f[columna].dtype in ['int32', 'float32']:
+      if df_f[columna].dtype in ['int32', 'float32', 'float64', 'int64']:
             print('numérica')
             data = df_f[columna]
             stat, p = stats.shapiro(data)
@@ -120,7 +120,7 @@ print(f'analisis de noramlidad: {analisis}')
 # Correlación
 analisis = analisis + "<br /><strong>Correlación</strong><br />"
 dependiente = "Temperatura"
-numeric_columns = df_f.select_dtypes(include=['int32', 'float64'])
+numeric_columns = df_f.select_dtypes(include=['int32', 'float32', 'float64', 'int64'])
 correlation_matrix = np.corrcoef(numeric_columns, rowvar=False)
 correlation_df = pd.DataFrame(correlation_matrix, columns=numeric_columns.columns, index=numeric_columns.columns)
 
@@ -157,7 +157,7 @@ def reg_m(y, x):
 variables_respuesta=[]
 y = df_f[dependiente]
 for columna in df_f.columns:
-   if df_f[columna].dtypes in ['int32', 'float64'] and columna != dependiente:
+   if df_f[columna].dtypes in ['int32', 'float32', 'float64', 'int64'] and columna != dependiente:
       variables_respuesta+=([df_f[columna]])
 
 print(variables_respuesta)
@@ -238,4 +238,49 @@ for conn in client_connections:
             conn.sendall(html_content)
         except Exception as e:
             print(f"Error al enviar datos al cliente: {e}") 
+
+
+def shell_sort(vector, n):
+  step=n//2
+  while (step>0):
+    for i in range(step,n):
+      j=i-step
+      while(j>=0):
+        k= j + step
+        if (vector[j]>vector[k]):
+          aux=vector[j]
+          vector[j]=vector[k]
+          vector[k]=aux
+        else:
+          j-=1
+      j=j-step
+    step=step//2
+  return vector
+
+while True:
+    data = conn.recv(1024)
+    columna = data.decode('utf-8')
+    vector = df[columna]
+    res = shell_sort(vector, len(vector))
+
+    data_to_send = pickle.dumps(res)
+    size = len(data_to_send).to_bytes(4, byteorder='big')
+    for conn in client_connections:
+            try:
+                conn.sendall(size)
+                conn.sendall(data_to_send)
+            except Exception as e:
+                print(f"Error al enviar datos al cliente: {e}") 
+
+    if columna == 'None' or columna not in df.columns:
+        reg = pickle.dumps("Variable no encontrada.")
+        for conn in client_connections:
+                try:
+                    conn.sendall(len(reg).to_bytes(4, byteorder='big'))
+                    conn.sendall(reg)
+                except Exception as e:
+                    print(f"Error al enviar datos al cliente: {e}") 
+
+        
+        
 SOCKET_SERVIDOR.close()

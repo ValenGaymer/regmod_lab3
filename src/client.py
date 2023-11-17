@@ -7,7 +7,7 @@ import numpy as np
 import webbrowser
 
 
-HOST = '10.20.2.21'
+HOST = '192.168.101.82'
 PORT = 65000
 num_rows = 10
 random.seed(42)
@@ -79,6 +79,29 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         f.write(html_content)
 
     webbrowser.open(html_file_path, new=2)
-    client_socket.close()
 
-    
+    while True:
+        opc=3
+        print("¿Desea organizar alguna columna del dataframe de manera ascendente?")
+        opc=input("S o N")
+        if opc.strip()=="S":
+            columna = input(f"¿Cuál columna? El dataframe tiene las siguientes: {dataframe.columns}")
+            client_socket.sendall(columna.encode('utf-8'))
+            tamaño_data = client_socket.recv(4)
+            data_size = int.from_bytes(tamaño_data, byteorder='big')
+            data = b""
+            while len(data) < data_size:
+                more_data = client_socket.recv(data_size - len(data))
+                if not more_data:
+                    raise Exception("Recibido menos datos de lo esperado")
+                data += more_data
+            vector = pickle.loads(data)
+            text = ''
+            for i in vector:
+                text = f'{text + str(i)}\n'
+            print(columna)
+            print(text)
+        else:
+            break
+
+    client_socket.close()
