@@ -82,7 +82,7 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
     while True:
         print("¿Desea organizar alguna columna del dataframe de manera ascendente?")
         columna = input(f"¿Cuál columna? El dataframe tiene las siguientes: {dataframe.columns}")
-        client_socket.sendall((f'{columna}-a').encode('utf-8'))
+        client_socket.sendall(columna.encode('utf-8'))
         tamaño_data = client_socket.recv(4)
         data_size = int.from_bytes(tamaño_data, byteorder='big')
         data = b""
